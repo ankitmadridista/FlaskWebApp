@@ -16,6 +16,7 @@ def home():
         note = request.form.get('note')
         if len(note) < 1:
             flash('Note is empty', category='error')
+            return redirect(url_for('views.home'))
         else:
             new_note = Note(data=note, user_id=current_user.id)
             db.session.add(new_note)
@@ -33,6 +34,23 @@ def delete_note():
     if note:
         if note.user_id == current_user.id:
             db.session.delete(note)
+            db.session.commit()
+
+    return jsonify({})
+
+
+@views.route('/save-changes', methods=['POST'])
+def save_changes():
+    note = json.loads(request.data)
+    noteId = note['noteId']
+    noteData = note['noteData']
+    note = Note.query.get(noteId)
+    print('noteData', noteData)
+    if len(noteData) != 0:
+        note.data = noteData
+
+    if note:
+        if note.user_id == current_user.id:
             db.session.commit()
 
     return jsonify({})
